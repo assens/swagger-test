@@ -122,49 +122,6 @@
           </dependency>
         </dependencies>
       </plugin>
- 
-      <!-- 
-      <plugin>
-        <groupId>io.swagger.core.v3</groupId>
-        <artifactId>swagger-maven-plugin</artifactId>
-        <version>2.1.1</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>resolve</goal>
-            </goals>
-            <configuration>
-              <outputFileName>${project.artifactId}-${project.version}</outputFileName>
-              <outputPath>${project.build.directory}/generated-resources/swagger</outputPath>
-              <outputFormat>JSONANDYAML</outputFormat>
-              <resourcePackages>
-                <package>com.foo.test.swagger.controller.*</package>
-              </resourcePackages>
-              <prettyPrint>TRUE</prettyPrint>
-            </configuration>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-jaxrs2</artifactId>
-            <version>2.1.0</version>
-          </dependency>
-
-          <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-            <version>2.1</version>
-          </dependency>
-          <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-      -->
-
 
       <plugin>
         <groupId>io.swagger.codegen.v3</groupId>
@@ -180,14 +137,68 @@
               <inputSpec>${project.build.directory}/generated-resources/swagger/${project.artifactId}-${project.version}.yaml</inputSpec>
               <language>java</language>
               <library>resttemplate</library>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>${project.artifactId}-client</artifactId>
+              <artifactVersion>${project.version}</artifactVersion>
               <modelPackage>com.foo.test.swagger.dto</modelPackage>
               <apiPackage>com.foo.test.swagger.client</apiPackage>
+              <generateApiDocumentation>false</generateApiDocumentation>
+              <generateApiTests>false</generateApiTests>
+              <generateModelTests>false</generateModelTests>
+              <configOptions>
+                <dateLibrary>java8</dateLibrary>
+              </configOptions>
             </configuration>
           </execution>
         </executions>
       </plugin>
 
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>0.32.0</version>
+        <configuration>
+          <images>
+            <image>
+              <name>maven:3.6.1-jdk-8</name>
+              <run>
+                <volumes>
+                  <bind>
+                    <volume>${user.home}/.m2:/root/.m2:z</volume>
+                    <volume>${project.build.directory}/generated-sources/swagger:/swagger</volume>
+                  </bind>
+                </volumes>
+                <cmd>mvn -Dmaven.test.skip -Dspring-web-version=4.3.25.RELEASE -f swagger/pom.xml package</cmd>
+                <log>
+                  <file>${project.build.directory}/docker.log</file>
+                </log>
+                <wait>
+                  <log>Finished at</log>
+                  <time>180000</time>
+                </wait>
+              </run>
+            </image>
+          </images>
+        </configuration>
+        <executions>
+          <execution>
+            <id>start</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>start</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>stop</id>
+            <phase>process-test-sources</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
+
     <pluginManagement>
       <plugins>
         <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
@@ -231,6 +242,20 @@
                     <versionRange>[3.0.13,)</versionRange>
                     <goals>
                       <goal>generate</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <versionRange>[0.32.0,)</versionRange>
+                    <goals>
+                      <goal>start</goal>
+                      <goal>stop</goal>
                     </goals>
                   </pluginExecutionFilter>
                   <action>
