@@ -122,13 +122,14 @@
           </dependency>
         </dependencies>
       </plugin>
-
+<!-- 
       <plugin>
         <groupId>io.swagger.codegen.v3</groupId>
         <artifactId>swagger-codegen-maven-plugin</artifactId>
-        <version>3.0.13</version>
+        <version>3.0.15</version>
         <executions>
           <execution>
+            <id>java</id>
             <phase>generate-test-sources</phase>
             <goals>
               <goal>generate</goal>
@@ -148,8 +149,79 @@
               <configOptions>
                 <dateLibrary>java8</dateLibrary>
               </configOptions>
+              <output>${project.build.directory}/generated-sources/${project.artifactId}-client</output>
             </configuration>
           </execution>
+        </executions>
+      </plugin>
+ -->
+      <plugin>
+        <groupId>io.swagger</groupId>
+        <artifactId>swagger-codegen-maven-plugin</artifactId>
+        <version>2.4.11</version>
+        <executions>
+
+          <execution>
+            <id>java</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>${project.build.directory}/generated-resources/swagger/${project.artifactId}-${project.version}.yaml</inputSpec>
+              <language>java</language>
+              <library>resttemplate</library>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>${project.artifactId}-client</artifactId>
+              <artifactVersion>${project.version}</artifactVersion>
+              <modelPackage>com.foo.test.swagger.dto</modelPackage>
+              <apiPackage>com.foo.test.swagger.client</apiPackage>
+              <generateApiDocumentation>false</generateApiDocumentation>
+              <generateApiTests>false</generateApiTests>
+              <generateModelTests>false</generateModelTests>
+              <configOptions>
+                <dateLibrary>java8</dateLibrary>
+              </configOptions>
+              <output>${project.build.directory}/generated-sources/${project.artifactId}-client</output>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>android</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>${project.build.directory}/generated-resources/swagger/${project.artifactId}-${project.version}.yaml</inputSpec>
+              <language>android</language>
+              <library>httpclient</library>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>${project.artifactId}-android</artifactId>
+              <artifactVersion>${project.version}</artifactVersion>
+              <modelPackage>com.foo.test.swagger.dto</modelPackage>
+              <apiPackage>com.foo.test.swagger.client</apiPackage>
+              <generateApiDocumentation>false</generateApiDocumentation>
+              <generateApiTests>false</generateApiTests>
+              <generateModelTests>false</generateModelTests>
+              <output>${project.build.directory}/generated-sources/${project.artifactId}-android</output>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>swift5</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>${project.build.directory}/generated-resources/swagger/${project.artifactId}-${project.version}.yaml</inputSpec>
+              <language>swift5</language>
+              <projectName>${project.groupId}</projectName>
+              <output>${project.build.directory}/generated-sources/${project.artifactId}-swift5</output>
+            </configuration>
+          </execution>
+
         </executions>
       </plugin>
 
@@ -165,7 +237,7 @@
                 <volumes>
                   <bind>
                     <volume>${user.home}/.m2:/root/.m2:z</volume>
-                    <volume>${project.build.directory}/generated-sources/swagger:/swagger</volume>
+                    <volume>${project.build.directory}/generated-sources/${project.artifactId}-client:/swagger</volume>
                   </bind>
                 </volumes>
                 <cmd>mvn -Dmaven.test.skip -Dspring-web-version=4.3.25.RELEASE -f swagger/pom.xml package</cmd>
@@ -256,6 +328,19 @@
                     <goals>
                       <goal>start</goal>
                       <goal>stop</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>io.swagger</groupId>
+                    <artifactId>swagger-codegen-maven-plugin</artifactId>
+                    <versionRange>[2.4.11,)</versionRange>
+                    <goals>
+                      <goal>generate</goal>
                     </goals>
                   </pluginExecutionFilter>
                   <action>
